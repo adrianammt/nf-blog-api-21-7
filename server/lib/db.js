@@ -36,10 +36,10 @@ const dbPath = path.resolve(__dirname, "./db.json");
 */
 function insert(article) {
   return fs.readFile(dbPath, "utf-8").then((jsonData) => {
-    const article = JSON.parse(jsonData);
+    const articles = JSON.parse(jsonData);
     const newArticle = {
       ...article,
-      id: `${article.length + 1}`,
+      id: `${articles.length + 1}`,
       createdAt: new Date().toISOString(),
       votes: {
         up: 0,
@@ -47,7 +47,7 @@ function insert(article) {
       },
     };
     articles.push(newArticle);
-    fs.writeFile(dbPath, JSON.stringify(posts));
+    fs.writeFile(dbPath, JSON.stringify(articles));
     return newArticle;
   });
 }
@@ -101,7 +101,7 @@ function updateById(id, content) {
     let newArticle;
     const newArticles = articles.map((article) => {
       if (article.id === id) {
-        newAricle = {
+        newArticle = {
           ...article,
           ...content,
         };
