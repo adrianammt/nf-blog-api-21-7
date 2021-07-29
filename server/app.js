@@ -6,6 +6,18 @@ const db = require("./lib/db");
   the express function.
 */
 const app = express();
+app.use(function addRequestTime(req, res, next) {
+  console.log("Request time:", Date.now());
+  next();
+});
+app.use(function getUrl(req, res, next) {
+  console.log("The url is:", req.path);
+  next();
+});
+app.use(function getMethod(req, res, next) {
+  console.log("Method used:", req.method);
+  next();
+});
 
 /*
   We setup middleware to:
@@ -39,8 +51,16 @@ app.post("/articles", (req, res) => {
       res.send(error);
     });
 });
+//This is a Route Level Middleware to validate is the Id is a number. I could have also used regex
+function validateNumberId(req, res, next) {
+  if (isNaN(req.params.id)) {
+    res.status(400).json("Error: Id must be a number");
+    return;
+  }
+  next();
+}
 
-app.get("/articles/:id", (req, res) => {
+app.get("/articles/:id", validateNumberId, (req, res) => {
   console.log("GET by Id Works");
   db.findById(req.params.id)
     .then((articleById) => {

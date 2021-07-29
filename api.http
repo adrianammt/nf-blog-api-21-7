@@ -18,6 +18,12 @@ GET http://localhost:4001/articles/4 HTTP/1.1
 
 ### PATCH to /articles/:id == update article with declared id
 PATCH http://localhost:4001/articles/4 HTTP/1.1
+Content-Type: application/json
+
+{
+    "title": "Patched Title",
+    "body": "Patched Body"
+}
 
 ### DELETE /articles/:id 
-DELETE http://localhost:4001/articles/3 HTTP/1.1
+DELETE http://localhost:4001/articles/4 HTTP/1.1
