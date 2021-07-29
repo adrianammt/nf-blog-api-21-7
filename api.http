@@ -14,7 +14,7 @@ Content-Type: application/json
 }
 
 ### GET /articles/:id
-GET http://localhost:4001/articles/4 HTTP/1.1
+GET http://localhost:4001/articles/ HTTP/1.1
 
 ### PATCH to /articles/:id == update article with declared id
 PATCH http://localhost:4001/articles/4 HTTP/1.1

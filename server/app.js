@@ -1,5 +1,6 @@
 const express = require("express");
 const db = require("./lib/db");
+const mongoose = require("mongoose");
 
 /*
   We create an express app calling
