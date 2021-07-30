@@ -82,7 +82,7 @@ function validateRequest(req, res, next) {
 // I am connecting to the article model I created on models
 app.post("/articles", validateRequest, (req, res) => {
   Article.create(req.body)
-    .populate(Author)
+    .populate(author)
     .then((newArticle) => {
       res.status(201).send(newArticle);
     })
