@@ -1,11 +1,25 @@
 const express = require("express");
-const db = require("./lib/db");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const Article = require("./models/article");
+const Author = require("./models/author");
 
 /*
   We create an express app calling
   the express function.
 */
+
 const app = express();
+
+/*
+  We setup middleware to:
+  - parse the body of the request to json for us
+  https://expressjs.com/en/guide/using-middleware.html
+  Application Level Middleware
+*/
+
+app.use(express.json());
+app.use(cors());
 app.use(function addRequestTime(req, res, next) {
   console.log("Request time:", Date.now());
   next();
@@ -29,8 +43,15 @@ app.use(express.json());
 /*
   Endpoint to handle GET requests to the root URI "/"
 */
+app.get("/", (req, res) => {
+  res.json({
+    "/articles": "read and create new articles",
+    "/articles/:id": "read, update and delete an individual article",
+  });
+});
+
 app.get("/articles", (req, res) => {
-  db.findAll()
+  Article.find()
     .then((data) => {
       res.send(data);
     })
@@ -40,17 +61,46 @@ app.get("/articles", (req, res) => {
     });
 });
 
-app.post("/articles", (req, res) => {
-  console.log("Post to articles");
-  db.insert(req.body)
-    .then((newPost) => {
-      res.status(201).send(newPost);
-    })
-    .catch((error) => {
-      console.error(error);
-      res.send(error);
+//middleware function to validate article content when created
+
+function validateRequest(req, res, next) {
+  if (!req.body.title) {
+    res.status(400).json({
+      error: "Request body must contain a title property",
     });
+    return;
+  }
+  if (!req.body.body) {
+    res.status(400).json({
+      error: "Request body must contain a body property",
+    });
+    return;
+  }
+
+  next();
+}
+// I am connecting to the article model I created on models
+app.post("/articles", validateRequest, (req, res) => {
+  Article.create(req.body)
+    .populate(author)
+    .then((newArticle) => {
+      res.status(201).send(newArticle);
+    })
+    .catch(() => {
+      res.status(500);
+      res.json({ error: "something went wrong" });
+    });
+  // console.log("Post to articles");
+  // db.insert(req.body)
+  //   .then((newPost) => {
+  //     res.status(201).send(newPost);
+  //   })
+  //   .catch((error) => {
+  //     console.error(error);
+  //     res.send(error);
+  //   });
 });
+
 //This is a Route Level Middleware to validate is the Id is a number. I could have also used regex
 function validateNumberId(req, res, next) {
   if (isNaN(req.params.id)) {
@@ -60,9 +110,9 @@ function validateNumberId(req, res, next) {
   next();
 }
 
-app.get("/articles/:id", validateNumberId, (req, res) => {
+app.get("/articles/:id", (req, res) => {
   console.log("GET by Id Works");
-  db.findById(req.params.id)
+  Article.findById(req.params.id)
     .then((articleById) => {
       //first check for errors, then go on
       if (!articleById) {
@@ -80,7 +130,10 @@ app.get("/articles/:id", validateNumberId, (req, res) => {
 
 app.patch("/articles/:id", (req, res) => {
   console.log("PATCH works");
-  db.updateById(req.params.id, req.body)
+  const { id } = req.params;
+  // const id = req.params.id;
+  // const content = req.body; (i would put content instead of req.body)
+  Article.findByIdAndUpdate(id, req.body, { new: true })
     .then((patchArticleById) => {
       if (!patchArticleById) {
         res.status(404).end();
@@ -97,7 +150,7 @@ app.patch("/articles/:id", (req, res) => {
 
 app.delete("/articles/:id", (req, res) => {
   console.log("DELETE works");
-  db.deleteById(req.params.id)
+  Article.findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(204).end();
     })
@@ -117,6 +170,15 @@ app.get("/", (req, res) => {
   We have to start the server. We make it listen on the port 4000
 
 */
-app.listen(4001, () => {
-  console.log("Listening on http://localhost:4001");
-});
+mongoose
+  .connect("mongodb://localhost:27017/articles-api", {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useFindAndModify: false,
+  })
+  .then(() => {
+    console.log("Conneted to mongo");
+    app.listen(4001, () => {
+      console.log("Listening on http://localhost:4001");
+    });
+  });
