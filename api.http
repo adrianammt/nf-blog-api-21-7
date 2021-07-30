@@ -5,12 +5,13 @@ GET http://localhost:4001/ HTTP/1.1
 GET http://localhost:4001/articles HTTP/1.1
 
 ### POST to /articles
-POST http://localhost:4001/articles HTTP/1.1
+POST http://localhost:4001/articles/author HTTP/1.1
 Content-Type: application/json
 
 {
     "title": "This is title",
-    "body": "Body"
+    "body": "Body",
+    "author": "The author is me!",
 }
 
 ### GET /articles/:id

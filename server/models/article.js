@@ -13,6 +13,10 @@ const articleSchema = new Schema(
       up: Number,
       down: Number,
     },
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "Author",
+    },
   },
   {
     timestamps: true,
